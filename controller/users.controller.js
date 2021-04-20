@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 let User = require('../model/user.model');
-
+const anil = [];
 router.get('/list', (req, res) => {
     User.find((err, docs) => {
         if (!err) {
@@ -15,7 +15,7 @@ router.get('/list', (req, res) => {
         }
     })
 });
-router.post('/new', async (req, res) => {
+router.post('/new', async(req, res) => {
     try {
         const salt = await bcrypt.genSalt();
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
@@ -50,46 +50,45 @@ router.post('/new', async (req, res) => {
     }
 });
 
-router.post('/login', async(req,res) => {
+router.post('/login', async(req, res) => {
     let user = new User({
-        username:req.body.username,
-        password:req.body.password
+        username: req.body.username,
+        password: req.body.password
     });
     User.findOne({
-        username:user.username
-        },(err, userData) =>{
-            if(err){
-                console.log(err)
-            }else{
-                if(!userData){
-                    res.status(400).send('User does not exist ! or'+'Check your admin!');
-                }else{
-                    try{
-                        bcrypt.compare(user.password, userData.password, function(err, doc){
-                            if(doc === true){
-                                let payload = {
-                                    subject:userData._id,
-                                    user:{
-                                        username:user.username,
-                                        password:userData.password,
-                                    }
-                                };
-                                let token = jwt.sign(payload,'secretKey'); 
-                                const pass = userData.password;
-                                res.status(200).send({
-                                    token
-                                });                               
-                            }else{
-                                res.status(400).send('Password not matched'+doc)
-                            }
-                        });
+        username: user.username
+    }, (err, userData) => {
+        if (err) {
+            console.log(err)
+        } else {
+            if (!userData) {
+                res.status(400).send('User does not exist ! or' + 'Check your admin!');
+            } else {
+                try {
+                    bcrypt.compare(user.password, userData.password, function(err, doc) {
+                        if (doc === true) {
+                            let payload = {
+                                subject: userData._id,
+                                user: {
+                                    username: user.username,
+                                    password: userData.password,
+                                }
+                            };
+                            let token = jwt.sign(payload, 'secretKey');
+                            const pass = userData.password;
+                            res.status(200).send({
+                                token
+                            });
+                        } else {
+                            res.status(400).send('Password not matched' + doc)
+                        }
+                    });
 
-                    }catch{
-                        res.status(500).send('User information not valid');
-                    }
+                } catch {
+                    res.status(500).send('User information not valid');
                 }
             }
         }
-    )
+    })
 });
 module.exports = router;
